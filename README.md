@@ -20,8 +20,15 @@ Deploys **Hysteria2** (primary) + **VLESS+Reality** (backup) dual-protocol proxy
 curl -fsSL https://raw.githubusercontent.com/littlexia4-creator/DOCKERFILES/refs/heads/main/proxy-server/quick-start.sh | bash
 ```
 
-### Verify
+### Subscription
+
+After deployment, run verify script to get subscription URLs:
 
 ```bash
 docker exec proxy-server /usr/local/bin/proxy-verify.sh
 ```
+
+| Client | Subscription URL |
+|--------|------------------|
+| mihomo / Clash.Meta | `http://<IP>:2096/<token>/clash.yaml` |
+| v2rayN | `http://<IP>:2096/<token>/v2rayn.txt` |

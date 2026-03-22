@@ -202,7 +202,20 @@ rules:
   - MATCH,Proxy
 EOF
 
-# ============== 7. Create subscription service ==============
+# ============== 7. Generate v2rayN subscription ==============
+info "Generating v2rayN subscription..."
+
+# Hysteria2 share link
+HY2_LINK="hysteria2://${HY2_PASSWORD}@${SERVER_IP}:${HY2_PORT}?insecure=1&sni=${SERVER_IP}#${HY2_NAME}"
+
+# VLESS+Reality share link
+VLESS_LINK="vless://${VLESS_UUID}@${SERVER_IP}:${VLESS_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=${REALITY_SNI}&fp=chrome&pbk=${REALITY_PUBLIC_KEY}&sid=${SHORT_ID}&type=tcp#${VLESS_NAME}"
+
+# Base64 encode for v2rayN subscription
+V2RAYN_CONTENT=$(echo -e "${HY2_LINK}\n${VLESS_LINK}" | base64 -w 0)
+echo "$V2RAYN_CONTENT" > /var/www/v2rayn-sub.txt
+
+# ============== 8. Create subscription service ==============
 info "Creating subscription service..."
 cat > /usr/local/bin/sub-server.py << PYEOF
 import http.server
@@ -215,6 +228,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-Disposition", "attachment; filename=clash.yaml")
             self.end_headers()
             with open("/var/www/clash-sub.yaml", "rb") as f:
+                self.wfile.write(f.read())
+        elif self.path == "/${SUB_TOKEN}/v2rayn.txt":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.end_headers()
+            with open("/var/www/v2rayn-sub.txt", "rb") as f:
                 self.wfile.write(f.read())
         else:
             self.send_response(404)
@@ -241,7 +260,7 @@ WantedBy=multi-user.target
 SVCEOF
 
 
-# ============== 8. Output results ==============
+# ============== 9. Output results ==============
 echo ""
 echo -e "${GREEN}============================================${NC}"
 echo -e "${GREEN}       PROXY install complete!${NC}"
@@ -249,6 +268,9 @@ echo -e "${GREEN}============================================${NC}"
 echo ""
 echo -e "${YELLOW}=== Clash subscription URL (mihomo/Clash.Meta) ===${NC}"
 echo -e "http://${SERVER_IP}:${SUB_PORT}/${SUB_TOKEN}/clash.yaml"
+echo ""
+echo -e "${YELLOW}=== v2rayN subscription URL ===${NC}"
+echo -e "http://${SERVER_IP}:${SUB_PORT}/${SUB_TOKEN}/v2rayn.txt"
 echo ""
 echo -e "${YELLOW}=== Hysteria2 node (primary) ===${NC}"
 echo "Server:   ${SERVER_IP}"
@@ -266,6 +288,7 @@ echo ""
 echo -e "${YELLOW}=== Config files ===${NC}"
 echo "/etc/sing-box/config.json       # sing-box config"
 echo "/var/www/clash-sub.yaml         # Clash subscription config"
+echo "/var/www/v2rayn-sub.txt         # v2rayN subscription config"
 echo ""
 
 # Save info to file
@@ -274,8 +297,11 @@ cat > /root/proxy-info.txt << INFOEOF
        PROXY Deployment Info
 ============================================
 
-Clash subscription URL:
+Clash subscription URL (mihomo/Clash.Meta):
 http://${SERVER_IP}:${SUB_PORT}/${SUB_TOKEN}/clash.yaml
+
+v2rayN subscription URL:
+http://${SERVER_IP}:${SUB_PORT}/${SUB_TOKEN}/v2rayn.txt
 
 --- Hysteria2 node (primary) ---
 Server:   ${SERVER_IP}
