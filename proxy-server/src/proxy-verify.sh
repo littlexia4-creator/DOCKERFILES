@@ -14,9 +14,6 @@ NC='\033[0m'
 info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 
-# Check root
-[ "$(id -u)" -ne 0 ] && error "Please run this script as root"
-
 # ============== 1. Verify ==============
 supervisorctl status sing-box | grep -q "RUNNING" && info "sing-box is running" || error "sing-box is not running"
 supervisorctl status sub-server | grep -q "RUNNING" && info "Subscription service is running" || error "Subscription service is not running"
