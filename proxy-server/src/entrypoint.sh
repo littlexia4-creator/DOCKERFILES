@@ -6,6 +6,7 @@
 set -e
 
 # ============== Config ==============
+COUNTRY_CODE="${COUNTRY_CODE:-}"
 NODE_NAME="${NODE_NAME:-}"
 SERVER_IP="${SERVER_IP:-}"
 HY2_PORT=8443
@@ -58,6 +59,29 @@ detect_server_ip() {
         [ -z "$SERVER_IP" ] && error "Unable to detect server IP. Set SERVER_IP environment variable."
     fi
     info "Server IP: $SERVER_IP"
+    export SERVER_IP
+}
+
+# Detect country from public IP
+# using ipinfo.io API
+detect_country() {
+# {
+#   "ip": "38.76.220.13",
+#   "city": "Hong Kong",
+#   "region": "Hong Kong",
+#   "country": "HK",
+#   "loc": "22.2783,114.1747",
+#   "org": "AS401701 cognetcloud INC",
+#   "postal": "999077",
+#   "timezone": "Asia/Hong_Kong",
+#   "readme": "https://ipinfo.io/missingauth"
+# }
+    if [ -z "$COUNTRY_CODE" ]; then
+        info "Detecting country from IP..."
+        COUNTRY_CODE=$(curl -s4 --connect-timeout 5 ipinfo.io/country 2>/dev/null || echo "Unknown")
+    fi
+    info "Detected country: $COUNTRY_CODE"
+    export COUNTRY_CODE
 }
 
 # Generate SSL certificate
@@ -74,11 +98,11 @@ generate_singbox_config() {
     info "Generating sing-box config..."
 
     if [ -n "$NODE_NAME" ]; then
-        HY2_NAME="Hysteria2-${NODE_NAME}"
-        VLESS_NAME="Reality-${NODE_NAME}"
+        HY2_NAME="${COUNTRY_CODE} Hysteria2-${NODE_NAME}"
+        VLESS_NAME="${COUNTRY_CODE} Reality-${NODE_NAME}"
     else
-        HY2_NAME="Hysteria2-${SERVER_IP}"
-        VLESS_NAME="Reality-${SERVER_IP}"
+        HY2_NAME="${COUNTRY_CODE} Hysteria2-${SERVER_IP}"
+        VLESS_NAME="${COUNTRY_CODE} Reality-${SERVER_IP}"
     fi
 
     mkdir -p /etc/sing-box
@@ -289,6 +313,7 @@ EOF
 main() {
     load_or_generate_credentials
     detect_server_ip
+    detect_country
     generate_ssl_cert
     generate_singbox_config
     generate_subscription_configs
