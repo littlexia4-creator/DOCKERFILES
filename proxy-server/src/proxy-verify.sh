@@ -15,8 +15,31 @@ info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
 
 # ============== 1. Verify ==============
-supervisorctl status sing-box | grep -q "RUNNING" && info "sing-box is running" || error "sing-box is not running"
-supervisorctl status sub-server | grep -q "RUNNING" && info "Subscription service is running" || error "Subscription service is not running"
+wait_for_service() {
+  local service="$1"
+  local timeout="${2:-10}"
+  local count=0
+  while [ $count -lt $timeout ]; do
+    if supervisorctl status "$service" | grep -q "RUNNING"; then
+      return 0
+    fi
+    sleep 1
+    count=$((count + 1))
+  done
+  return 1
+}
+
+if wait_for_service sing-box 10; then
+  info "sing-box is running"
+else
+  error "sing-box is not running after 10 seconds"
+fi
+
+if wait_for_service sub-server 10; then
+  info "Subscription service is running"
+else
+  error "Subscription service is not running after 10 seconds"
+fi
 
 # ============== 2. Print /root/proxy-info.txt ==============
 if [ -f /root/proxy-info.txt ]; then
