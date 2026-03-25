@@ -272,16 +272,6 @@ If VLESS+Reality times out, enable in client:
 - TCP Fast Open
 - Allow Insecure
 EOF
-
-    info "============================================"
-    info "       PROXY SERVER READY"
-    info "============================================"
-    info ""
-    info "Clash subscription URL:"
-    info "http://${SERVER_IP}:${SUB_PORT}/${SUB_TOKEN}/clash.yaml"
-    info ""
-    info "v2rayN subscription URL:"
-    info "http://${SERVER_IP}:${SUB_PORT}/${SUB_TOKEN}/v2rayn.txt"
 }
 
 # Main
