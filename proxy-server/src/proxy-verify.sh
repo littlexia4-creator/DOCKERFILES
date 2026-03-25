@@ -30,14 +30,29 @@ fi
 CLASH_URL=$(grep -oP 'http://\S+/clash\.yaml' /root/proxy-info.txt 2>/dev/null)
 V2RAYN_URL=$(grep -oP 'http://\S+/v2rayn\.txt' /root/proxy-info.txt 2>/dev/null)
 
+# Extract path and check via localhost (container can't reach its own public IP)
+check_url() {
+  local url="$1"
+  local path=$(echo "$url" | sed 's|.*://[^/]*||')
+  curl --head --silent --fail "http://127.0.0.1:2096${path}" > /dev/null 2>&1
+}
+
 if [ -n "$CLASH_URL" ]; then
-  echo ""
-  echo -e "${YELLOW}=== Scan QR code for Clash subscription ===${NC}"
-  qrencode -t ANSIUTF8 "$CLASH_URL"
+  if check_url "$CLASH_URL"; then
+      echo ""
+      echo -e "${YELLOW}=== Scan QR code for Clash subscription ===${NC}"
+      qrencode -t ANSIUTF8 "$CLASH_URL"
+  else
+    error "CLASH_URL is not reachable"
+  fi
 fi
 
 if [ -n "$V2RAYN_URL" ]; then
-  echo ""
-  echo -e "${YELLOW}=== Scan QR code for v2rayN subscription ===${NC}"
-  qrencode -t ANSIUTF8 "$V2RAYN_URL"
+  if check_url "$V2RAYN_URL"; then
+    echo ""
+    echo -e "${YELLOW}=== Scan QR code for v2rayN subscription ===${NC}"
+    qrencode -t ANSIUTF8 "$V2RAYN_URL"
+  else
+    error "V2RAYN_URL is not reachable"
+  fi
 fi
