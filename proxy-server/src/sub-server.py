@@ -32,7 +32,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if self.path == f"/{SUB_TOKEN}/clash.yaml":
             self._send_file("/var/www/clash-sub.yaml", "text/yaml; charset=utf-8", "clash.yaml")
         elif self.path == f"/{SUB_TOKEN}/v2rayn.txt":
-            self._send_file("/var/www/v2rayn-sub.txt", "text/plain; charset=utf-8")
+            self._send_file("/var/www/v2rayn-sub.txt", "text/plain; charset=utf-8", "v2rayn.txt")
         else:
             self.send_response(404)
             self.end_headers()

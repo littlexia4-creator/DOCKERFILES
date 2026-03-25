@@ -242,16 +242,29 @@ EOF
 
 # Save proxy info
 save_proxy_info() {
+    CLASH_URL="http://${SERVER_IP}:${SUB_PORT}/${SUB_TOKEN}/clash.yaml"
+    V2RAYN_URL="http://${SERVER_IP}:${SUB_PORT}/${SUB_TOKEN}/v2rayn.txt"
+    # Generate tinyurl shortened URL for v2rayN
+    V2RAYN_SSL_URL=$(python3 /usr/local/bin/tinyurl.py "${V2RAYN_URL}" 2>/dev/null || echo "")
+
+    cat > /root/url-info.txt << EOF
+============================================
+       Subscription URL Info
+============================================
+Clash subscription URL (shadowrocket/ClashX.Meta):
+${CLASH_URL}
+
+v2rayN subscription URL:
+${V2RAYN_URL}
+
+v2rayN subscription URL(SSL):
+${V2RAYN_SSL_URL}
+EOF
+
     cat > /root/proxy-info.txt << EOF
 ============================================
        PROXY Deployment Info
 ============================================
-
-Clash subscription URL (mihomo/Clash.Meta):
-http://${SERVER_IP}:${SUB_PORT}/${SUB_TOKEN}/clash.yaml
-
-v2rayN subscription URL:
-http://${SERVER_IP}:${SUB_PORT}/${SUB_TOKEN}/v2rayn.txt
 
 --- Hysteria2 node (primary) ---
 Server:   ${SERVER_IP}
