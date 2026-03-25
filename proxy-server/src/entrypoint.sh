@@ -232,7 +232,7 @@ EOF
     # v2rayN subscription
     HY2_LINK="hysteria2://${HY2_PASSWORD}@${SERVER_IP}:${HY2_PORT}?insecure=1&sni=${SERVER_IP}#${HY2_NAME}"
     VLESS_LINK="vless://${VLESS_UUID}@${SERVER_IP}:${VLESS_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=${REALITY_SNI}&fp=chrome&pbk=${REALITY_PUBLIC_KEY}&sid=${SHORT_ID}&type=tcp#${VLESS_NAME}"
-    V2RAYN_CONTENT=$(echo -e "${HY2_LINK}\n${VLESS_LINK}" | base64 -w 0)
+    V2RAYN_CONTENT=$(echo -e "${VLESS_LINK}\r\n${HY2_LINK}" | base64 -w 0)
     echo "$V2RAYN_CONTENT" > /var/www/v2rayn-sub.txt
 
     # Export for sub-server.py
