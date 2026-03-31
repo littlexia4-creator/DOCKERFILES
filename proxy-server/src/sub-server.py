@@ -45,5 +45,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    # 调试为何本机通过代理访问不了订阅链接
     server = http.server.HTTPServer(("0.0.0.0", SUB_PORT), Handler)
     server.serve_forever()
