@@ -244,9 +244,6 @@ EOF
 save_proxy_info() {
     CLASH_URL="http://${SERVER_IP}:${SUB_PORT}/${SUB_TOKEN}/clash.yaml"
     V2RAYN_URL="http://${SERVER_IP}:${SUB_PORT}/${SUB_TOKEN}/v2rayn.txt"
-    # Generate tinyurl shortened URL for v2rayN
-    V2RAYN_SSL_URL=$(python3 /usr/local/bin/tinyurl.py "${V2RAYN_URL}" 2>/dev/null || echo "")
-
     cat > /root/url-info.txt << EOF
 ============================================
        Subscription URL Info
@@ -257,8 +254,8 @@ ${CLASH_URL}
 v2rayN subscription URL:
 ${V2RAYN_URL}
 
-v2rayN subscription URL(SSL):
-${V2RAYN_SSL_URL}
+v2rayN subscription content:
+${V2RAYN_CONTENT}
 EOF
 
     cat > /root/proxy-info.txt << EOF

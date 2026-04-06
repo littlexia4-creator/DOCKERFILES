@@ -52,7 +52,7 @@ fi
 # ============== 3. Show subscription QR codes ==============
 CLASH_URL=$(grep -oP 'http://\S+/clash\.yaml' /root/url-info.txt 2>/dev/null)
 V2RAYN_URL=$(grep -oP 'http://\S+/v2rayn\.txt' /root/url-info.txt 2>/dev/null)
-V2RAYN_SSL_URL=$(grep -oP 'https://tinyurl\.com/\S+' /root/url-info.txt 2>/dev/null)
+V2RAYN_CONTENT=$(sed -n '/^v2rayN subscription content:$/,/^$/{/^v2rayN subscription content:$/d;p}' /root/url-info.txt 2>/dev/null)
 
 # Extract path and check via localhost (container can't reach its own public IP)
 check_url() {
@@ -74,19 +74,14 @@ fi
 
 if [ -n "$V2RAYN_URL" ]; then
   if check_url "$V2RAYN_URL"; then
-    if [ -n "$V2RAYN_SSL_URL" ]; then
-      # Verify tinyurl shortened URL is accessible
+    if [ -n "$V2RAYN_CONTENT" ]; then
       echo ""
-      echo -e "${YELLOW}=== Scan QR code for v2rayN subscription ===${NC}"
-      if curl --head --silent --fail "$V2RAYN_SSL_URL" > /dev/null 2>&1; then
-        echo "v2rayN subscription URL: ${V2RAYN_URL}"
-        echo "v2rayN subscription URL(SSL): ${V2RAYN_SSL_URL}"
-        qrencode -t ANSIUTF8 "$V2RAYN_SSL_URL"
-      else
-        error "V2RAYN_SSL_URL is not reachable"
-      fi
+      echo -e "${YELLOW}=== v2rayN subscription content ===${NC}"
+      echo "v2rayN subscription URL: ${V2RAYN_URL}"
+      echo "v2rayN subscription content: ${V2RAYN_CONTENT}"
+      qrencode -t ANSIUTF8 "$V2RAYN_CONTENT"
     else
-      error "Failed to create tinyurl shortened URL"
+      error "Failed to get v2rayN subscription content"
     fi
   else
     error "V2RAYN_URL is not reachable"
