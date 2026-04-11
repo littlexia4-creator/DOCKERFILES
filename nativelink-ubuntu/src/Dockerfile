@@ -1,14 +1,14 @@
-FROM ghcr.io/tracemachina/nativelink:rvpya7w878sm86gd028fgcz6j0prdj2y AS source
+FROM ghcr.io/tracemachina/nativelink:latest AS source
 
-# FROM ubuntu:24.04 AS final 
-# RUN export DEBIAN_FRONTEND="noninteractive" && apt-get update && apt-get install -y python3  
+# Resolve the nix-store path at build time — upstream bakes nativelink at
+# /nix/store/<hash>-nativelink-.../bin/nativelink where <hash> changes every release.
+FROM alpine:3 AS resolver
+COPY --from=source /nix /nix
+RUN set -eux; \
+    bin="$(find /nix/store -type f -path '*/bin/nativelink' | head -n1)"; \
+    [ -n "$bin" ] || { echo "nativelink binary not found in /nix/store" >&2; exit 1; }; \
+    install -m 0755 "$bin" /nativelink
 
 FROM python:3-slim AS final
-
-# source dir: /nix/store/.../bin/nativelink
-# dest dir: /bin/nativelink
-COPY --from=source /nix/store/d9nsczcvwki502smc8vxmyks5hrvimkn-nativelink-x86_64-unknown-linux-musl-1.0.0-rc3/bin/nativelink /bin/nativelink
-
-RUN chmod +x /bin/nativelink
-
+COPY --from=resolver /nativelink /bin/nativelink
 ENTRYPOINT ["/bin/nativelink"]
