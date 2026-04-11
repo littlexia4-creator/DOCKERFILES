@@ -1,4 +1,5 @@
-FROM ghcr.io/tracemachina/nativelink:latest AS source
+ARG NATIVELINK_TAG=v1.0.0
+FROM ghcr.io/tracemachina/nativelink:${NATIVELINK_TAG} AS source
 
 # Resolve the nix-store path at build time — upstream bakes nativelink at
 # /nix/store/<hash>-nativelink-.../bin/nativelink where <hash> changes every release.

@@ -61,6 +61,18 @@ jobs:
             type=sha,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 
+      - name: Resolve latest nativelink release tag
+        if: matrix.name == 'nativelink-ubuntu'
+        id: nativelink_tag
+        run: |
+          tag=$(curl -sfL https://api.github.com/repos/tracemachina/nativelink/releases/latest | jq -r .tag_name)
+          if [ -z "$tag" ] || [ "$tag" = "null" ]; then
+            echo "Failed to resolve nativelink release tag" >&2
+            exit 1
+          fi
+          echo "Using nativelink tag: $tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
       - name: Build and push ${{ matrix.name }} image
         uses: docker/build-push-action@v5
         with:
@@ -71,3 +83,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+          build-args: |
+            NATIVELINK_TAG=${{ steps.nativelink_tag.outputs.tag }}
