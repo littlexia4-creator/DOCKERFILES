@@ -17,7 +17,60 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      has-changes: ${{ steps.set-matrix.outputs.has-changes }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            proxy-server:
+              - 'proxy-server/src/**'
+            nativelink-ubuntu:
+              - 'nativelink-ubuntu/src/**'
+            workflow:
+              - '.github/workflows/docker-build.yml'
+
+      - name: Build dynamic matrix
+        id: set-matrix
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_CHANGED: ${{ steps.filter.outputs.workflow }}
+          PROXY_CHANGED: ${{ steps.filter.outputs.proxy-server }}
+          NATIVELINK_CHANGED: ${{ steps.filter.outputs.nativelink-ubuntu }}
+        run: |
+          set -euo pipefail
+          proxy='{"name":"proxy-server","context":"./proxy-server/src","platforms":"linux/amd64,linux/arm64"}'
+          nativelink='{"name":"nativelink-ubuntu","context":"./nativelink-ubuntu/src","platforms":"linux/amd64"}'
+
+          # Workflow-file edits or manual dispatch rebuild everything, so logic changes can't skip images.
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$WORKFLOW_CHANGED" = "true" ]; then
+            include="[$proxy,$nativelink]"
+          else
+            include="[]"
+            [ "$PROXY_CHANGED"      = "true" ] && include=$(jq -cn --argjson i "$include" --argjson e "$proxy"      '$i + [$e]')
+            [ "$NATIVELINK_CHANGED" = "true" ] && include=$(jq -cn --argjson i "$include" --argjson e "$nativelink" '$i + [$e]')
+          fi
+
+          echo "matrix={\"include\":$include}" >> "$GITHUB_OUTPUT"
+          if [ "$include" = "[]" ]; then
+            echo "has-changes=false" >> "$GITHUB_OUTPUT"
+            echo "No image sources changed — build job will be skipped."
+          else
+            echo "has-changes=true" >> "$GITHUB_OUTPUT"
+            echo "Will build: $include"
+          fi
+
   build:
+    needs: changes
+    if: needs.changes.outputs.has-changes == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -25,14 +78,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - name: proxy-server
-            context: ./proxy-server/src
-            platforms: linux/amd64,linux/arm64
-          - name: nativelink-ubuntu
-            context: ./nativelink-ubuntu/src
-            platforms: linux/amd64
+      matrix: ${{ fromJson(needs.changes.outputs.matrix) }}
 
     steps:
       - name: Checkout repository
