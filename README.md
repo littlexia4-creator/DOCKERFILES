@@ -33,3 +33,24 @@ docker exec proxy-server /usr/local/bin/proxy-verify.sh
 | shadowrocket / ClashX.Meta | `http://<IP>:2096/<token>/clash.yaml` |
 | v2rayN | `http://<IP>:2096/<token>/v2rayn.txt` |
 | v2rayN (SSL) | `https://tinyurl.com/<alias>` |
+
+## nativelink-ubuntu
+
+Packages the [nativelink](https://github.com/TraceMachina/nativelink) remote-execution / Content-Addressable Storage (CAS) server on a `python:3-slim` base, so Python-based remote workers and tooling can run in the same container as the server.
+The `nativelink` binary is lifted out of the upstream `ghcr.io/tracemachina/nativelink` image and dropped at `/bin/nativelink` as the entrypoint.
+
+### Image
+
+```
+ghcr.io/littlexia4-creator/nativelink-ubuntu:latest
+```
+
+Only `linux/amd64` is published — the upstream binary is `x86_64-unknown-linux-musl`.
+
+### Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/littlexia4-creator/DOCKERFILES/refs/heads/main/nativelink-ubuntu/install.sh | bash
+```
+
+Installs Docker if missing and pulls the image. The container is not started — run it with your own nativelink config when you're ready.

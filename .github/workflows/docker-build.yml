@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'proxy-server/src/**'
+      - 'nativelink-ubuntu/src/**'
       - '.github/workflows/docker-build.yml'
   pull_request:
     branches:
@@ -14,7 +15,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/proxy-server
 
 jobs:
   build:
@@ -22,6 +22,17 @@ jobs:
     permissions:
       contents: read
       packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: proxy-server
+            context: ./proxy-server/src
+            platforms: linux/amd64,linux/arm64
+          - name: nativelink-ubuntu
+            context: ./nativelink-ubuntu/src
+            platforms: linux/amd64
 
     steps:
       - name: Checkout repository
@@ -45,18 +56,18 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ matrix.name }}
           tags: |
             type=sha,prefix=
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push proxy-server image
+      - name: Build and push ${{ matrix.name }} image
         uses: docker/build-push-action@v5
         with:
-          context: ./proxy-server/src
-          platforms: linux/amd64,linux/arm64
+          context: ${{ matrix.context }}
+          platforms: ${{ matrix.platforms }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
