@@ -19,10 +19,12 @@ RUN set -eux; \
         -H "Accept: application/vnd.oci.image.manifest.v1+json" \
         "https://ghcr.io/v2/tracemachina/nativelink/manifests/$TAG" \
       | jq -r '.layers[0].digest'); \
+    mkdir /tmp/nl; \
     curl -sfL -H "Authorization: Bearer $TOKEN" \
         "https://ghcr.io/v2/tracemachina/nativelink/blobs/$DIGEST" \
-      | tar xzf - -C / bin/nativelink; \
-    chmod +x /bin/nativelink
+      | tar xzf - -C /tmp/nl; \
+    install -m 0755 /tmp/nl/bin/nativelink /bin/nativelink; \
+    rm -rf /tmp/nl
 
 FROM python:3-slim
 COPY --from=downloader /bin/nativelink /bin/nativelink
