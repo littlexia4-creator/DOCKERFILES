@@ -160,3 +160,4 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.name }}
           build-args: |
             NATIVELINK_TAG=${{ steps.nativelink_tag.outputs.tag }}
+            CACHEBUST=${{ github.run_id }}

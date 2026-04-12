@@ -1,15 +1,29 @@
-ARG NATIVELINK_TAG=4mcy7swhxa5xp0mpjqk7pbq6il8y9l9a
-FROM ghcr.io/tracemachina/nativelink:${NATIVELINK_TAG} AS source
+# CI can pass a specific tag (e.g. nix-hash from upstream logs) to skip the API lookup.
+# Without it, the build resolves the latest release tag automatically.
+ARG NATIVELINK_TAG=""
 
-# Resolve the nix-store path at build time — upstream bakes nativelink at
-# /nix/store/<hash>-nativelink-.../bin/nativelink where <hash> changes every release.
-FROM alpine:3 AS resolver
-COPY --from=source /nix /nix
+FROM python:3-slim AS downloader
+ARG NATIVELINK_TAG
+# Change CACHEBUST to invalidate the download cache (CI passes github.run_id).
+ARG CACHEBUST
 RUN set -eux; \
-    bin="$(find /nix/store -type f -path '*/bin/nativelink' | head -n1)"; \
-    [ -n "$bin" ] || { echo "nativelink binary not found in /nix/store" >&2; exit 1; }; \
-    install -m 0755 "$bin" /nativelink
+    apt-get update && apt-get install -y --no-install-recommends curl jq ca-certificates; \
+    if [ -n "$NATIVELINK_TAG" ]; then \
+      TAG="$NATIVELINK_TAG"; \
+    else \
+      TAG=$(curl -sfL https://api.github.com/repos/tracemachina/nativelink/releases/latest | jq -r .tag_name); \
+    fi; \
+    echo "Downloading nativelink:$TAG"; \
+    TOKEN=$(curl -sf "https://ghcr.io/token?service=ghcr.io&scope=repository:tracemachina/nativelink:pull" | jq -r .token); \
+    DIGEST=$(curl -sfL -H "Authorization: Bearer $TOKEN" \
+        -H "Accept: application/vnd.oci.image.manifest.v1+json" \
+        "https://ghcr.io/v2/tracemachina/nativelink/manifests/$TAG" \
+      | jq -r '.layers[0].digest'); \
+    curl -sfL -H "Authorization: Bearer $TOKEN" \
+        "https://ghcr.io/v2/tracemachina/nativelink/blobs/$DIGEST" \
+      | tar xzf - -C / bin/nativelink; \
+    chmod +x /bin/nativelink
 
-FROM python:3-slim AS final
-COPY --from=resolver /nativelink /bin/nativelink
+FROM python:3-slim
+COPY --from=downloader /bin/nativelink /bin/nativelink
 ENTRYPOINT ["/bin/nativelink"]
