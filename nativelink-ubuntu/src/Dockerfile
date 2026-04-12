@@ -23,7 +23,8 @@ RUN set -eux; \
     curl -sfL -H "Authorization: Bearer $TOKEN" \
         "https://ghcr.io/v2/tracemachina/nativelink/blobs/$DIGEST" \
       | tar xzf - -C /tmp/nl; \
-    install -m 0755 /tmp/nl/bin/nativelink /bin/nativelink; \
+    find /tmp/nl -type f -name nativelink -path '*/bin/nativelink' \
+      -exec install -m 0755 {} /bin/nativelink \; ; \
     rm -rf /tmp/nl
 
 FROM python:3-slim
