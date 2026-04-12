@@ -1,4 +1,4 @@
-ARG NATIVELINK_TAG=v1.0.0
+ARG NATIVELINK_TAG=4mcy7swhxa5xp0mpjqk7pbq6il8y9l9a
 FROM ghcr.io/tracemachina/nativelink:${NATIVELINK_TAG} AS source
 
 # Resolve the nix-store path at build time — upstream bakes nativelink at
