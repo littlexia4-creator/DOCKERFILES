@@ -110,6 +110,8 @@ jobs:
       - name: Resolve latest nativelink container tag
         if: matrix.name == 'nativelink-ubuntu'
         id: nativelink_tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           API=https://api.github.com/repos/tracemachina/nativelink
@@ -117,6 +119,7 @@ jobs:
 
           # Upstream image.yaml publishes a nix-hash-tagged image on every push to main.
           # Parse the IMAGE_TAG from the latest successful "Publish image" job logs.
+          # curl (anonymous) for runs/jobs endpoints; gh api (authenticated) for log download.
           run_id=$(curl -sfL "$API/actions/workflows/image.yaml/runs?branch=main&status=success&per_page=1" \
               | jq -r '.workflow_runs[0].id') || true
           echo "Latest image.yaml run: ${run_id:-none}"
@@ -127,7 +130,7 @@ jobs:
             echo "Publish image job: ${job_id:-none}"
 
             if [ -n "$job_id" ] && [ "$job_id" != "null" ]; then
-              tag=$(curl -sfL "$API/actions/jobs/$job_id/logs" \
+              tag=$(gh api "/repos/tracemachina/nativelink/actions/jobs/$job_id/logs" \
                   2>/dev/null | grep -o 'IMAGE_TAG=[a-z0-9]*' | head -1 | cut -d= -f2) || true
             fi
           fi
