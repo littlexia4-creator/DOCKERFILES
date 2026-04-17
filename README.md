@@ -56,6 +56,18 @@ curl -fsSL https://raw.githubusercontent.com/littlexia4-creator/DOCKERFILES/refs
 Installs Docker if missing and pulls the image. The container is not started — run it with your own nativelink config when you're ready.
 
 
+## osxcross-ubuntu
+
+Packages the [osxcross](https://github.com/tpoechtrager/osxcross) macOS cross-compilation toolchain on an Ubuntu base. The toolchain is copied from the `crazymax/osxcross` image and made available at `/osxcross`.
+
+### Image
+
+```
+ghcr.io/littlexia4-creator/osxcross-ubuntu:latest
+```
+
+Only `linux/amd64` is published — osxcross is an x86 cross-compilation toolchain.
+
 ---
 
 ## Reference: image pipelines
@@ -64,5 +76,4 @@ Installs Docker if missing and pulls the image. The container is not started —
 |-------|-------------|-----------|---------------|
 | `ghcr.io/littlexia4-creator/proxy-server` | `proxy-server/src` | `linux/amd64,linux/arm64` | `proxy-server/src/**` |
 | `ghcr.io/littlexia4-creator/nativelink-ubuntu` | `nativelink-ubuntu/src` | `linux/amd64` | `nativelink-ubuntu/src/**` |
-
-Both are tagged `latest` on default-branch pushes and by short SHA on every push, via `docker/metadata-action@v5`.
+| `ghcr.io/littlexia4-creator/osxcross-ubuntu` | `osxcross-ubuntu/src` | `linux/amd64` | `osxcross-ubuntu/src/**` |
