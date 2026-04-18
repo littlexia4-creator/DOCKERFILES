@@ -78,6 +78,24 @@ Only `linux/amd64` is published — the upstream binary is `x86_64-unknown-linux
 curl -fsSL https://raw.githubusercontent.com/littlexia4-creator/DOCKERFILES/refs/heads/main/nativelink/nativelink-osxcross-ubuntu/install.sh | bash
 ```
 
+## asio
+
+Alpine-based image with [Asio](https://think-async.com/Asio/) (header-only C++ async I/O library), `g++`, and `make`. Use as a build environment for Asio-based networking applications.
+
+### Image
+
+```
+ghcr.io/littlexia4-creator/asio:latest
+```
+
+Only `linux/amd64` is published.
+
+### Test
+
+```bash
+bash asio/test/test.sh
+```
+
 ## osxcross-ubuntu
 
 Packages the [osxcross](https://github.com/tpoechtrager/osxcross) macOS cross-compilation toolchain on an Ubuntu base. The toolchain is copied from the [crazymax/osxcross](https://github.com/crazy-max/docker-osxcross/blob/main/Dockerfile) image and made available at `/osxcross`.
@@ -101,3 +119,4 @@ Only `linux/amd64` is published — osxcross is an x86 cross-compilation toolcha
 | `ghcr.io/littlexia4-creator/nativelink-gcc` | `nativelink/nativelink-gcc/src` | `linux/amd64` | `nativelink/nativelink-gcc/src/**` |
 | `ghcr.io/littlexia4-creator/osxcross-ubuntu` | `osxcross-ubuntu/src` | `linux/amd64` | `osxcross-ubuntu/src/**` |
 | `ghcr.io/littlexia4-creator/nativelink-osxcross-ubuntu` | `nativelink/nativelink-osxcross-ubuntu/src` | `linux/amd64` | `nativelink/nativelink-osxcross-ubuntu/src/**` |
+| `ghcr.io/littlexia4-creator/asio` | `asio/src` | `linux/amd64` | `asio/src/**` |
