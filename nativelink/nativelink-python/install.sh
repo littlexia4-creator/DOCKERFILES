@@ -1,6 +1,6 @@
 #!/bin/bash
 
-IMAGE="ghcr.io/littlexia4-creator/nativelink-ubuntu:latest"
+IMAGE="ghcr.io/littlexia4-creator/nativelink-python:latest"
 
 # Check if Docker is installed and running
 if ! command -v docker &> /dev/null; then

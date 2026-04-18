@@ -1,23 +1,25 @@
-name: Build nativelink-ubuntu
+name: Build nativelink-python
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'nativelink-ubuntu/src/**'
-      - '.github/workflows/nativelink-ubuntu-build.yml'
+      - 'nativelink/nativelink-python/src/**'
+      - 'nativelink/build-space/download-nativelink.sh'
+      - '.github/workflows/nativelink-python-build.yml'
   pull_request:
     branches:
       - main
     paths:
-      - 'nativelink-ubuntu/src/**'
-      - '.github/workflows/nativelink-ubuntu-build.yml'
+      - 'nativelink/nativelink-python/src/**'
+      - 'nativelink/build-space/download-nativelink.sh'
+      - '.github/workflows/nativelink-python-build.yml'
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/nativelink-ubuntu
+  IMAGE_NAME: ${{ github.repository_owner }}/nativelink-python
 
 jobs:
   build:
@@ -89,13 +91,14 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./nativelink-ubuntu/src
+          context: ./nativelink/build-space
+          file: ./nativelink/nativelink-python/src/Dockerfile
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=nativelink-ubuntu
-          cache-to: type=gha,mode=max,scope=nativelink-ubuntu
+          cache-from: type=gha,scope=nativelink-python
+          cache-to: type=gha,mode=max,scope=nativelink-python
           build-args: |
             NATIVELINK_TAG=${{ steps.nativelink_tag.outputs.tag }}
             CACHEBUST=${{ github.run_id }}
