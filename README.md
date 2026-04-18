@@ -34,15 +34,40 @@ docker exec proxy-server /usr/local/bin/proxy-verify.sh
 | v2rayN | `http://<IP>:2096/<token>/v2rayn.txt` |
 | v2rayN (SSL) | `https://tinyurl.com/<alias>` |
 
-## nativelink-ubuntu
+## nativelink-python
 
 Packages the [nativelink](https://github.com/TraceMachina/nativelink) remote-execution / Content-Addressable Storage (CAS) server on a `python:3-slim` base, so Python-based remote workers and tooling can run in the same container as the server.
-The `nativelink` binary is lifted out of the upstream `ghcr.io/tracemachina/nativelink` image and dropped at `/bin/nativelink` as the entrypoint.
+The `nativelink` binary is lifted from the upstream `ghcr.io/tracemachina/nativelink` image and dropped at `/bin/nativelink` as the entrypoint.
 
 ### Image
 
 ```
-ghcr.io/littlexia4-creator/nativelink-ubuntu:latest
+ghcr.io/littlexia4-creator/nativelink-python:latest
+```
+
+Only `linux/amd64` is published — the upstream binary is `x86_64-unknown-linux-musl`.
+
+## nativelink-gcc
+
+Same as nativelink-python but on a `gcc:latest` base, providing a full C/C++ build toolchain alongside the nativelink server. Useful for remote-execution workers that need to compile native code.
+
+### Image
+
+```
+ghcr.io/littlexia4-creator/nativelink-gcc:latest
+```
+
+Only `linux/amd64` is published — the upstream binary is `x86_64-unknown-linux-musl`.
+
+
+## nativelink-osxcross-ubuntu
+
+Same as nativelink-python but on a `ghcr.io/littlexia4-creator/osxcross-ubuntu` base, providing the macOS cross-compilation toolchain alongside the nativelink server. Useful for remote-execution workers that need to cross-compile for macOS.
+
+### Image
+
+```
+ghcr.io/littlexia4-creator/nativelink-osxcross-ubuntu:latest
 ```
 
 Only `linux/amd64` is published — the upstream binary is `x86_64-unknown-linux-musl`.
@@ -50,15 +75,12 @@ Only `linux/amd64` is published — the upstream binary is `x86_64-unknown-linux
 ### Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/littlexia4-creator/DOCKERFILES/refs/heads/main/nativelink-ubuntu/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/littlexia4-creator/DOCKERFILES/refs/heads/main/nativelink/nativelink-osxcross-ubuntu/install.sh | bash
 ```
-
-Installs Docker if missing and pulls the image. The container is not started — run it with your own nativelink config when you're ready.
-
 
 ## osxcross-ubuntu
 
-Packages the [osxcross](https://github.com/tpoechtrager/osxcross) macOS cross-compilation toolchain on an Ubuntu base. The toolchain is copied from the `crazymax/osxcross` image and made available at `/osxcross`.
+Packages the [osxcross](https://github.com/tpoechtrager/osxcross) macOS cross-compilation toolchain on an Ubuntu base. The toolchain is copied from the [crazymax/osxcross](https://github.com/crazy-max/docker-osxcross/blob/main/Dockerfile) image and made available at `/osxcross`.
 
 ### Image
 
@@ -75,5 +97,7 @@ Only `linux/amd64` is published — osxcross is an x86 cross-compilation toolcha
 | Image | Source path | Platforms | Trigger paths |
 |-------|-------------|-----------|---------------|
 | `ghcr.io/littlexia4-creator/proxy-server` | `proxy-server/src` | `linux/amd64,linux/arm64` | `proxy-server/src/**` |
-| `ghcr.io/littlexia4-creator/nativelink-ubuntu` | `nativelink-ubuntu/src` | `linux/amd64` | `nativelink-ubuntu/src/**` |
+| `ghcr.io/littlexia4-creator/nativelink-python` | `nativelink/nativelink-python/src` | `linux/amd64` | `nativelink/nativelink-python/src/**` |
+| `ghcr.io/littlexia4-creator/nativelink-gcc` | `nativelink/nativelink-gcc/src` | `linux/amd64` | `nativelink/nativelink-gcc/src/**` |
 | `ghcr.io/littlexia4-creator/osxcross-ubuntu` | `osxcross-ubuntu/src` | `linux/amd64` | `osxcross-ubuntu/src/**` |
+| `ghcr.io/littlexia4-creator/nativelink-osxcross-ubuntu` | `nativelink/nativelink-osxcross-ubuntu/src` | `linux/amd64` | `nativelink/nativelink-osxcross-ubuntu/src/**` |
