@@ -1,0 +1,51 @@
+mixed-port: 7890
+
+unified-delay: true
+find-process-mode: strict
+global-client-fingerprint: chrome
+
+proxies:
+  - name: "${HY2_NAME}"
+    type: hysteria2
+    server: ${SERVER_IP}
+    port: ${HY2_PORT}
+    password: "${HY2_PASSWORD}"
+    alpn:
+      - h3
+    skip-cert-verify: true
+
+  - name: "${VLESS_NAME}"
+    type: vless
+    server: ${SERVER_IP}
+    port: ${VLESS_PORT}
+    uuid: ${VLESS_UUID}
+    network: tcp
+    udp: true
+    tls: true
+    flow: xtls-rprx-vision
+    client-fingerprint: chrome
+    servername: ${REALITY_SNI}
+    reality-opts:
+      public-key: ${REALITY_PUBLIC_KEY}
+      short-id: "${SHORT_ID}"
+
+proxy-groups:
+  - name: "Proxy"
+    type: select
+    proxies:
+      - "${HY2_NAME}"
+      - "${VLESS_NAME}"
+      - DIRECT
+
+  - name: "Auto Select"
+    type: url-test
+    proxies:
+      - "${HY2_NAME}"
+      - "${VLESS_NAME}"
+    url: "https://www.gstatic.com/generate_204"
+    interval: 300
+    tolerance: 100
+
+rules:
+  - GEOIP,CN,DIRECT
+  - MATCH,Proxy

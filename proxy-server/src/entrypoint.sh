@@ -14,6 +14,7 @@ VLESS_PORT=2083
 SUB_PORT=2096
 REALITY_SNI="www.microsoft.com"
 CREDENTIALS_FILE="/etc/proxy/credentials"
+TEMPLATE_DIR="/usr/local/share/proxy-templates"
 # ====================================
 
 info() { echo "[INFO] $1"; }
@@ -172,62 +173,9 @@ generate_subscription_configs() {
     info "Generating subscription configs..."
     mkdir -p /var/www
 
-    # Clash subscription
-    cat > /var/www/clash-sub.yaml << EOF
-mixed-port: 7890
-allow-lan: false
-mode: rule
-log-level: info
-unified-delay: true
-find-process-mode: strict
-global-client-fingerprint: chrome
-
-proxies:
-  - name: "${HY2_NAME}"
-    type: hysteria2
-    server: ${SERVER_IP}
-    port: ${HY2_PORT}
-    password: "${HY2_PASSWORD}"
-    alpn:
-      - h3
-    skip-cert-verify: true
-
-  - name: "${VLESS_NAME}"
-    type: vless
-    server: ${SERVER_IP}
-    port: ${VLESS_PORT}
-    uuid: ${VLESS_UUID}
-    network: tcp
-    udp: true
-    tls: true
-    flow: xtls-rprx-vision
-    client-fingerprint: chrome
-    servername: ${REALITY_SNI}
-    reality-opts:
-      public-key: ${REALITY_PUBLIC_KEY}
-      short-id: "${SHORT_ID}"
-
-proxy-groups:
-  - name: "Proxy"
-    type: select
-    proxies:
-      - "${HY2_NAME}"
-      - "${VLESS_NAME}"
-      - DIRECT
-
-  - name: "Auto Select"
-    type: url-test
-    proxies:
-      - "${HY2_NAME}"
-      - "${VLESS_NAME}"
-    url: "https://www.gstatic.com/generate_204"
-    interval: 300
-    tolerance: 100
-
-rules:
-  - GEOIP,CN,DIRECT
-  - MATCH,Proxy
-EOF
+    # Clash subscription (rendered from template)
+    export HY2_NAME VLESS_NAME SERVER_IP HY2_PORT HY2_PASSWORD VLESS_PORT VLESS_UUID REALITY_SNI REALITY_PUBLIC_KEY SHORT_ID
+    envsubst < "${TEMPLATE_DIR}/clash-sub.yaml.template" > /var/www/clash-sub.yaml
 
     # v2rayN subscription
     HY2_LINK="hysteria2://${HY2_PASSWORD}@${SERVER_IP}:${HY2_PORT}?insecure=1&sni=${SERVER_IP}#${HY2_NAME}"

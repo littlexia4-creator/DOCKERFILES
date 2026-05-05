@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install dependencies
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends \
-     ca-certificates curl openssl python3 python3-requests qrencode supervisor systemd-sysv \
+     ca-certificates curl gettext-base openssl python3 python3-requests qrencode supervisor systemd-sysv \
   && rm -rf /var/lib/apt/lists/*
 
 # Install sing-box
@@ -18,6 +18,7 @@ RUN mkdir -p /etc/apt/keyrings \
 
 RUN mkdir -p /var/log/supervisor /etc/proxy
 
+COPY templates/ /usr/local/share/proxy-templates/
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY proxy-verify.sh /usr/local/bin/proxy-verify.sh
 COPY sub-server.py /usr/local/bin/sub-server.py
