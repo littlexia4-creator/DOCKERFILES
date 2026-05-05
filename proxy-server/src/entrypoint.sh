@@ -177,6 +177,21 @@ generate_subscription_configs() {
     export HY2_NAME VLESS_NAME SERVER_IP HY2_PORT HY2_PASSWORD VLESS_PORT VLESS_UUID REALITY_SNI REALITY_PUBLIC_KEY SHORT_ID
     envsubst < "${TEMPLATE_DIR}/clash-sub.yaml.template" > /var/www/clash-sub.yaml
 
+    # Persist render vars for external template rendering
+    cat > /etc/proxy/render-vars << EOF
+SERVER_IP="${SERVER_IP}"
+HY2_PORT="${HY2_PORT}"
+VLESS_PORT="${VLESS_PORT}"
+HY2_PASSWORD="${HY2_PASSWORD}"
+VLESS_UUID="${VLESS_UUID}"
+REALITY_SNI="${REALITY_SNI}"
+REALITY_PUBLIC_KEY="${REALITY_PUBLIC_KEY}"
+SHORT_ID="${SHORT_ID}"
+HY2_NAME="${HY2_NAME}"
+VLESS_NAME="${VLESS_NAME}"
+EOF
+    chmod 600 /etc/proxy/render-vars
+
     # v2rayN subscription
     HY2_LINK="hysteria2://${HY2_PASSWORD}@${SERVER_IP}:${HY2_PORT}?insecure=1&sni=${SERVER_IP}#${HY2_NAME}"
     VLESS_LINK="vless://${VLESS_UUID}@${SERVER_IP}:${VLESS_PORT}?encryption=none&flow=xtls-rprx-vision&security=reality&sni=${REALITY_SNI}&fp=chrome&pbk=${REALITY_PUBLIC_KEY}&sid=${SHORT_ID}&type=tcp#${VLESS_NAME}"

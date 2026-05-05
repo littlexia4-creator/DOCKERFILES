@@ -6,3 +6,5 @@ proxy-stop.sh
 bash.exe.stackdump
 TODO.md
 tinyurl.py
+.DS_Store
+deploy-and-generate-configs.sh
