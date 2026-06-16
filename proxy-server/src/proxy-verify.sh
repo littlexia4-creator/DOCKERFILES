@@ -58,7 +58,7 @@ V2RAYN_CONTENT=$(sed -n '/^v2rayN subscription content:$/,/^$/{/^v2rayN subscrip
 check_url() {
   local url="$1"
   local path=$(echo "$url" | sed 's|.*://[^/]*||')
-  curl --head --silent --fail "http://127.0.0.1:2096${path}" > /dev/null 2>&1
+  curl --head --silent --fail --connect-timeout 5 --max-time 10 "http://127.0.0.1:2096${path}" > /dev/null 2>&1
 }
 
 if [ -n "$CLASH_URL" ]; then

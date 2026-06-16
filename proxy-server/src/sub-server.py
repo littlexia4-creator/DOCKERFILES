@@ -12,6 +12,9 @@ SUB_PORT = int(os.environ.get("SUB_PORT", "2096"))
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
+    # Drop slow/half-open clients so one stuck connection can't wedge the server
+    timeout = 10
+
     def _send_file(self, path, content_type, filename=None):
         try:
             size = os.path.getsize(path)
@@ -45,6 +48,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    # 调试为何本机通过代理访问不了订阅链接
-    server = http.server.HTTPServer(("0.0.0.0", SUB_PORT), Handler)
+    # ThreadingHTTPServer: one stuck/slow client cannot block other requests
+    server = http.server.ThreadingHTTPServer(("0.0.0.0", SUB_PORT), Handler)
+    server.daemon_threads = True
     server.serve_forever()
