@@ -12,7 +12,7 @@ SERVER_IP="${SERVER_IP:-}"
 HY2_PORT=8443
 VLESS_PORT=2083
 SUB_PORT=2096
-REALITY_SNI="www.microsoft.com"
+REALITY_SNI="${REALITY_SNI:-www.cloudflare.com}"
 CREDENTIALS_FILE="/etc/proxy/credentials"
 TEMPLATE_DIR="/usr/local/share/proxy-templates"
 # ====================================
