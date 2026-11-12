@@ -1,0 +1,81 @@
+name: Build linux-bochs images
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'linux-bochs/src/**'
+      - 'linux-bochs-patch/src/**'
+      - '.github/workflows/linux-bochs-build.yml'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/linux-bochs
+  PATCH_IMAGE_NAME: ${{ github.repository_owner }}/linux-bochs-patch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract base image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push base runtime
+        id: bochs
+        uses: docker/build-push-action@v5
+        with:
+          context: ./linux-bochs/src
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=linux-bochs
+          cache-to: type=gha,mode=max,scope=linux-bochs
+
+      - name: Extract patch image metadata
+        id: patch-meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.PATCH_IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push patched runtime
+        id: bochs-patch
+        uses: docker/build-push-action@v5
+        with:
+          context: ./linux-bochs-patch/src
+          platforms: linux/amd64
+          build-args: |
+            BOCHS_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.bochs.outputs.digest }}
+          push: true
+          tags: ${{ steps.patch-meta.outputs.tags }}
+          labels: ${{ steps.patch-meta.outputs.labels }}
+          cache-from: type=gha,scope=linux-bochs-patch
+          cache-to: type=gha,mode=max,scope=linux-bochs-patch

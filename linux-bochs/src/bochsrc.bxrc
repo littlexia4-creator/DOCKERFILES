@@ -1,0 +1,20 @@
+# Boot the existing Linux0.11-Learning disk images mounted at /work.
+megs: 32
+cpu: ips=1000000
+
+romimage: file="/usr/share/bochs/BIOS-bochs-legacy"
+vgaromimage: file="/usr/share/bochs/VGABIOS-lgpl-latest"
+
+floppya: 1_44="Boot.img", status=inserted
+floppyb: 1_44="rootimage-0.11.img", status=inserted
+ata0-master: type=disk, path="hdc-0.11.img", mode=flat, cylinders=121, heads=16, spt=63
+boot: a
+
+log: bochsout.txt
+mouse: enabled=0
+keyboard: use_mapping=0
+config_interface: textconfig
+display_library: term
+speaker: enabled=0
+magic_break: enabled=1
+panic: action=fatal

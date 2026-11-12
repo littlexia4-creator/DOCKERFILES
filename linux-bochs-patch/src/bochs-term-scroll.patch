@@ -1,0 +1,21 @@
+--- a/gui/term.cc
++++ b/gui/term.cc
+@@ -67,6 +67,7 @@
+ bool termHideIPS = 0;
+ static unsigned int text_rows = 25, text_cols = 80;
+ static unsigned long last_cursor_x, last_cursor_y;
++static unsigned long last_start_address = ~0UL;
+ 
+ static short curses_color[8] = {
+   /* 0 */ COLOR_BLACK,
+@@ -555,7 +556,9 @@
+   unsigned char *old_line, *new_line;
+   unsigned int hchars, rows, x, y;
+   chtype ch;
+-  bool force_update = 0;
++  // Hardware scrolling changes the viewport without changing its bytes.
++  bool force_update = (tm_info->start_address != last_start_address);
++  last_start_address = tm_info->start_address;
+ 
+   if(charmap_updated) {
+     force_update = 1;
